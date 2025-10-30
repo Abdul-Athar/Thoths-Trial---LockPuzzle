@@ -18,7 +18,22 @@ public class Shackle : MonoBehaviour
         LeanTween.moveLocalY(gameObject, yMovement, yMovementDuration).setEase(LeanTweenType.easeOutBack).setOnComplete(
             () => LeanTween.rotateAroundLocal(gameObject, Vector3.up, rotationAngle, rotationDuration)
                 .setEase(LeanTweenType.easeOutBack)
-                .setOnComplete(() => onShackleOpened?.Invoke())   // <-- TRIGGER EVENT AFTER FULL ANIMATION
+                .setOnComplete(() =>
+                {
+                    // --- FIRST DELAY: after shackle animation, before camera exit ---
+                    LeanTween.delayedCall(0.5f, () =>   // Adjust delay time here (seconds)
+                    {
+                        // Exit lock camera view
+                        InteractionManagement.Instance.ExitLockView();
+
+                        // --- SECOND DELAY: after camera switch, before chest lid opens ---
+                        LeanTween.delayedCall(0.5f, () =>  // Adjust delay time here
+                        {
+                            // Trigger chest opening event
+                            onShackleOpened?.Invoke();
+                        });
+                    });
+                })
         );
     }
 }
